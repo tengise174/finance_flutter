@@ -24,7 +24,7 @@ class _BottomNavBarExampleState extends State<BottomNavBarExample> {
   // List of screens to navigate
   final List<Widget> _screens = [
     HomeScreen(),
-    StatsScreen(userId: "8vib9IJVZvalVJGkO7Oj0nLeACk2"),
+    StatsScreen(userId: "ZjniNBvCUfeXzyF1RPhz5p7R9o83"),
     WalletScreen(),
     UserScreen(),
   ];

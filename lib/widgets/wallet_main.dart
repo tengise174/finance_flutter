@@ -48,6 +48,19 @@ class _WalletMainState extends State<WalletMain>
     });
   }
 
+  Stream<QuerySnapshot> _fetchOrders() {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+
+    return FirebaseFirestore.instance
+        .collection('orders')
+        .where('userId', isEqualTo: userId)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .handleError((error) {
+      print("Error fetching orders: $error");
+    });
+  }
+
   void _calculateIncomeAndExpenses(List<DocumentSnapshot> transactions) {
     double newIncome = 0.0;
     double newExpense = 0.0;
@@ -74,19 +87,6 @@ class _WalletMainState extends State<WalletMain>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-  }
-
-  Stream<QuerySnapshot> _fetchOrders() {
-    String userId = FirebaseAuth.instance.currentUser!.uid;
-
-    return FirebaseFirestore.instance
-        .collection('orders')
-        .where('userId', isEqualTo: userId)
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .handleError((error) {
-      print("Error fetching orders: $error");
-    });
   }
 
   void showPaymentDialog({
@@ -319,6 +319,9 @@ class _WalletMainState extends State<WalletMain>
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
+                  }
+                   if (snapshot.hasError) {
+                    return Center(child: Text("Error loading orders"));
                   }
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return Center(child: Text("No orders found."));

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -15,6 +17,59 @@ class WalletSecond extends StatefulWidget {
 class _WalletSecondState extends State<WalletSecond>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
+  String? selectedOption;
+
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController amountController = TextEditingController();
+  final TextEditingController cardNumberController = TextEditingController();
+  final TextEditingController cvcController = TextEditingController();
+  final TextEditingController expiryController = TextEditingController();
+  final TextEditingController zipController = TextEditingController();
+
+  Future<void> addIncomeTransactionToFirebase() async {
+    String message = '';
+    try {
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+
+      double amount = double.tryParse(amountController.text) ?? 0.0;
+
+      await FirebaseFirestore.instance.collection('transactions').add({
+        'cardName': nameController.text,
+        'cardNumber': cardNumberController.text,
+        'description': 'Орлого',
+        'userId': userId,
+        'amount': amount,
+        'type': 'income',
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      message = "Гүйлгээ амжилттай";
+    } catch (error) {
+      message = "Гүйлгээ амжилтгүй";
+    }
+
+    showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text(
+                'Төлөв',
+                style: TextStyle(color: Color(0xFF438883)),
+              ),
+              content: Text(message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+  }
 
   @override
   void initState() {
@@ -76,7 +131,7 @@ class _WalletSecondState extends State<WalletSecond>
                     "Картны мэдээллээ нэмэх",
                     textAlign: TextAlign.start,
                     style: TextStyle(
-                      fontSize: 16.0,
+                      fontSize: 18.0,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -89,12 +144,13 @@ class _WalletSecondState extends State<WalletSecond>
                     ),
                   ),
                   SizedBox(
-                    height: 15,
+                    height: 25,
                   ),
                   SizedBox(
                     width: 380,
                     height: 45,
                     child: TextField(
+                      controller: nameController,
                       style: TextStyle(
                         color: Color(0xFF3E7C78),
                       ),
@@ -121,10 +177,12 @@ class _WalletSecondState extends State<WalletSecond>
                     width: 380,
                     height: 45,
                     child: TextField(
+                      controller: amountController,
                       style: TextStyle(
                         color: Color(0xFF3E7C78),
                       ),
                       decoration: InputDecoration(
+                        prefixText: '\$',
                           labelText: 'Үнийн дүн',
                           labelStyle: TextStyle(
                             color: Colors.grey,
@@ -138,9 +196,9 @@ class _WalletSecondState extends State<WalletSecond>
                           focusedBorder: OutlineInputBorder(
                             borderSide: BorderSide(color: Color(0xFF3E7C78)),
                           )),
-                          inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
                     ),
                   ),
                   SizedBox(
@@ -154,6 +212,7 @@ class _WalletSecondState extends State<WalletSecond>
                         SizedBox(
                           width: 240,
                           child: TextField(
+                            controller: cardNumberController,
                             style: TextStyle(
                               color: Color(0xFF3E7C78),
                             ),
@@ -184,6 +243,7 @@ class _WalletSecondState extends State<WalletSecond>
                         SizedBox(
                           width: 120,
                           child: TextField(
+                            controller: cvcController,
                             style: TextStyle(
                               color: Color(0xFF3E7C78),
                             ),
@@ -223,6 +283,7 @@ class _WalletSecondState extends State<WalletSecond>
                         SizedBox(
                           width: 240,
                           child: TextField(
+                            controller: expiryController,
                             style: TextStyle(
                               color: Color(0xFF3E7C78),
                             ),
@@ -254,6 +315,7 @@ class _WalletSecondState extends State<WalletSecond>
                         SizedBox(
                           width: 120,
                           child: TextField(
+                            controller: zipController,
                             style: TextStyle(
                               color: Color(0xFF3E7C78),
                             ),
@@ -281,15 +343,169 @@ class _WalletSecondState extends State<WalletSecond>
                       ],
                     ),
                   ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Container(
+                    width: 380,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Color(0xFF438883)),
+                    ),
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor:
+                            WidgetStateProperty.all(Colors.transparent),
+                        elevation: WidgetStateProperty.all(0),
+                      ),
+                      onPressed: () {
+                        addIncomeTransactionToFirebase();
+                      },
+                      child: Text(
+                        "Болсон",
+                        style:
+                            TextStyle(fontSize: 20, color: Color(0xFF438883)),
+                      ),
+                    ),
+                  ),
                 ],
               ),
 
               //////
-              Text("Hello"),
+
+              ListView(
+                padding: EdgeInsets.all(16),
+                children: [
+                  buildOptionCard(
+                    optionKey: 'bank_link',
+                    icon: Icons.account_balance,
+                    title: 'Bank Link',
+                    description: 'Connect your bank account to deposit & fund',
+                  ),
+                  buildOptionCard(
+                    optionKey: 'microdeposits',
+                    icon: Icons.attach_money,
+                    title: 'Microdeposits',
+                    description: 'Connect bank in 5-7 days',
+                  ),
+                  buildOptionCard(
+                    optionKey: 'paypal',
+                    icon: Icons.payment,
+                    title: 'Paypal',
+                    description: 'Connect your PayPal account',
+                  ),
+                  SizedBox(
+                    height: 100,
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Color(0xFF438883)),
+                    ),
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor:
+                            WidgetStateProperty.all(Colors.transparent),
+                        elevation: WidgetStateProperty.all(0),
+                      ),
+                      onPressed: () {},
+                      child: Text(
+                        "Дараах",
+                        style:
+                            TextStyle(fontSize: 20, color: Color(0xFF438883)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              ////
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget buildOptionCard({
+    required String optionKey,
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    bool isSelected = selectedOption == optionKey;
+    Color textColor = isSelected ? Colors.teal : Colors.grey;
+    Color iconColor = isSelected ? Colors.teal : Colors.grey;
+    Color backgroundColor = isSelected ? Colors.teal[50]! : Colors.white;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedOption = optionKey;
+        });
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16),
+        height: 100,
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 6,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: iconColor.withOpacity(0.1),
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 28,
+              ),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: textColor.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: Colors.teal,
+                size: 24,
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
