@@ -50,25 +50,26 @@ class _WalletSecondState extends State<WalletSecond>
     }
 
     showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text(
-                'Төлөв',
-                style: TextStyle(color: Color(0xFF438883)),
-              ),
-              content: Text(message),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            'Төлөв',
+            style: TextStyle(color: Color(0xFF438883)),
+          ),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); 
+                widget.onSwitch(0); 
+              },
+              child: const Text('OK'),
+            ),
+          ],
         );
+      },
+    );
   }
 
   @override
@@ -182,7 +183,7 @@ class _WalletSecondState extends State<WalletSecond>
                         color: Color(0xFF3E7C78),
                       ),
                       decoration: InputDecoration(
-                        prefixText: '\$',
+                          prefixText: '\$',
                           labelText: 'Үнийн дүн',
                           labelStyle: TextStyle(
                             color: Colors.grey,

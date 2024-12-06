@@ -24,11 +24,10 @@ class _WalletThirdState extends State<WalletThird> {
     String message = '';
     try {
       String userId = FirebaseAuth.instance.currentUser!.uid;
-      await FirebaseFirestore.instance.collection('transactions').add({
+      await FirebaseFirestore.instance.collection('orders').add({
         'description': selectedItem,
         'userId': userId,
         'amount': double.tryParse(_amountController.text) ?? 0.0,
-        'type': 'expense',
         'timestamp': Timestamp.fromDate(pickedDate!),
       });
 
@@ -38,27 +37,27 @@ class _WalletThirdState extends State<WalletThird> {
     }
 
     showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text(
-                'Төлөв',
-                style: TextStyle(color: Color(0xFF438883)),
-              ),
-              content: Text(message),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            'Төлөв',
+            style: TextStyle(color: Color(0xFF438883)),
+          ),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                widget.onSwitch(0);
+              },
+              child: const Text('OK'),
+            ),
+          ],
         );
+      },
+    );
   }
-
 
   Future<void> _selectDate(BuildContext context) async {
     DateTime? selected = await showDatePicker(
@@ -70,7 +69,7 @@ class _WalletThirdState extends State<WalletThird> {
 
     if (selected != null) {
       setState(() {
-        pickedDate = selected; 
+        pickedDate = selected;
         _dateController.text = "${selected.toLocal()}".split(' ')[0];
       });
     }
@@ -235,7 +234,6 @@ class _WalletThirdState extends State<WalletThird> {
               SizedBox(
                 height: 30,
               ),
-              
               Text(
                 "Төлбөр",
                 style: TextStyle(
@@ -250,26 +248,27 @@ class _WalletThirdState extends State<WalletThird> {
                 width: 380,
                 height: 50,
                 child: DottedBorder(
-                  color: Colors.black, 
+                  color: Colors.black,
                   strokeWidth: 2,
-                  borderType: BorderType.RRect, 
-                  radius: Radius.circular(12), 
+                  borderType: BorderType.RRect,
+                  radius: Radius.circular(12),
                   child: Container(
                     padding: EdgeInsets.symmetric(
-                        horizontal: 100,
-                        ), 
+                      horizontal: 100,
+                    ),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12), 
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        addExpenseTransactionToFirebase();
+                      },
                       child: Row(
-                        mainAxisSize: MainAxisSize.min, 
-                        mainAxisAlignment: MainAxisAlignment
-                            .center, 
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.add, color: Colors.black),
-                          SizedBox(width: 8), 
+                          SizedBox(width: 8),
                           Text(
                             "Төлбөр нэмэх",
                             style: TextStyle(
@@ -283,34 +282,6 @@ class _WalletThirdState extends State<WalletThird> {
                   ),
                 ),
               ),
-
-              SizedBox(
-                height: 30,
-              ),
-
-              Container(
-                    width: 380,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Color(0xFF438883)),
-                    ),
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor:
-                            WidgetStateProperty.all(Colors.transparent),
-                        elevation: WidgetStateProperty.all(0),
-                      ),
-                      onPressed: () {
-                        addExpenseTransactionToFirebase();
-                      },
-                      child: Text(
-                        "Болсон",
-                        style:
-                            TextStyle(fontSize: 20, color: Color(0xFF438883)),
-                      ),
-                    ),
-                  ),
             ],
           ),
         ));

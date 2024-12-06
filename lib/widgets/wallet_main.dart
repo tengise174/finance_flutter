@@ -5,8 +5,9 @@ import 'package:intl/intl.dart';
 
 class WalletMain extends StatefulWidget {
   final Function(int) onSwitch;
+  final Function(String) setOrderId;
 
-  WalletMain({required this.onSwitch});
+  WalletMain({required this.onSwitch, required this.setOrderId});
   @override
   _WalletMainState createState() => _WalletMainState();
 }
@@ -255,6 +256,9 @@ class _WalletMainState extends State<WalletMain>
           child: TabBarView(
             controller: _tabController,
             children: [
+
+/////////
+
               StreamBuilder<QuerySnapshot>(
                 stream: _fetchTransactions(),
                 builder: (context, snapshot) {
@@ -314,6 +318,7 @@ class _WalletMainState extends State<WalletMain>
                   );
                 },
               ),
+
               StreamBuilder<QuerySnapshot>(
                 stream: _fetchOrders(),
                 builder: (context, snapshot) {
@@ -326,6 +331,10 @@ class _WalletMainState extends State<WalletMain>
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return Center(child: Text("No orders found."));
                   }
+
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _calculateIncomeAndExpenses(snapshot.data!.docs);
+                  });
 
                   return ListView.builder(
                     itemCount: snapshot.data!.docs.length,
@@ -357,11 +366,8 @@ class _WalletMainState extends State<WalletMain>
                         subtitle: Text(formattedDate),
                         trailing: TextButton(
                             onPressed: () {
-                              showPaymentDialog(
-                                context: context,
-                                description: description,
-                                amount: amount,
-                              );
+                              widget.onSwitch(3);
+                              widget.setOrderId(order.id);
                             },
                             style: TextButton.styleFrom(
                               backgroundColor: Color(0xFFECF9F8),
@@ -382,6 +388,9 @@ class _WalletMainState extends State<WalletMain>
                   );
                 },
               )
+
+/////
+
             ],
           ),
         ),

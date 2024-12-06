@@ -1,5 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finance_app/screens/home_screen.dart';
+import 'package:finance_app/widgets/wallet_fifth.dart';
+import 'package:finance_app/widgets/wallet_fourth.dart';
 import 'package:finance_app/widgets/wallet_main.dart';
+import 'package:finance_app/widgets/wallet_sixth.dart';
 import 'package:finance_app/widgets/wallet_third.dart';
 import 'package:finance_app/widgets/wallet_second.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +16,34 @@ class WalletScreen extends StatefulWidget {
 class _WalletScreenState extends State<WalletScreen>
     with SingleTickerProviderStateMixin {
   int currentScreenIndex = 0;
+  String orderId = '';
+  String paymentMethod = '';
+  double amount = 0;
+  String description = '';
+
+  void setDescription(String newDescription) {
+    setState(() {
+      description = newDescription;
+    });
+  }
+
+  void setAmount(double newAmount) {
+    setState(() {
+      amount = newAmount;
+    });
+  }
+
+  void setOrderId(String newOrderid) {
+    setState(() {
+      orderId = newOrderid;
+    });
+  }
+
+  void setPaymentMethod(String newPaymentMethod) {
+    setState(() {
+      paymentMethod = newPaymentMethod;
+    });
+  }
 
   void switchScreen(int index) {
     setState(() {
@@ -22,9 +54,12 @@ class _WalletScreenState extends State<WalletScreen>
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = [
-      WalletMain(onSwitch: switchScreen),
+      WalletMain(onSwitch: switchScreen, setOrderId: setOrderId),
       WalletSecond(onSwitch: switchScreen),
       WalletThird(onSwitch: switchScreen),
+      WalletFourth(onSwitch: switchScreen, setPaymentMethod: setPaymentMethod ,orderId: orderId),
+      WalletFifth(onSwitch: switchScreen, orderId: orderId, setAmount: setAmount, setDescription: setDescription),
+      WalletSixth(onSwitch: switchScreen, paymentMethod: paymentMethod, amount: amount, description: description),
     ];
 
     return Scaffold(
